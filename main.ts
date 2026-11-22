@@ -1,18 +1,18 @@
-// A tiny stack virtual machine for make.fun's tiny stack ISA (v1), written
-// for tiny-stack-vm-01: one run answers the whole set, running each
-// /input/<id>/program.bin on its /input/<id>/input.bin and writing its output
-// bytes and end code to /output/<id>/. Machine: wrapping 32-bit values, data
-// stack 256, call stack 64, 256 memory words, at most 1,000,000 steps and
-// 65,536 output bytes a program; traps (codes 2..11) become the exit code
-// and keep the output written before them.
+// A tiny stack VM for make.fun's tiny stack ISA (v1), for
+// tiny-stack-vm-01: one run answers the whole set, running each
+// /input/<id>/program.bin on its /input/<id>/input.bin and writing
+// its output bytes and end code to /output/<id>/. Machine: wrapping
+// 32-bit values, stack 256, call stack 64, 256 memory words, at most
+// 1,000,000 steps and 65,536 output bytes a program; traps (codes
+// 2..11) become the exit code, keeping output written before them.
 
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const STACK_CAP = 256, CALL_CAP = 64, MEM_WORDS = 256, STEP_CAP = 1_000_000, OUT_CAP = 65_536;
 
-// Runs one program to its end, answering [output bytes, exit code]. Every
-// finish (halt, EXIT, a trap) unwinds through `end`, throwing the code.
+// Runs one program to its end: [output bytes, exit code]. Every
+// finish (halt, EXIT, a trap) unwinds through `end`, throwing it.
 function execute(prog, inp) {
   const size = prog.length;
   const stack = new Int32Array(STACK_CAP);
@@ -30,7 +30,7 @@ function execute(prog, inp) {
 
   try {
     for (;;) {
-      // Each step's gauntlet, in the ISA's order: limit, pc, opcode, immediate.
+      // Each step's gauntlet, in ISA order: limit, pc, opcode, immediate.
       if (steps >= STEP_CAP) end(10);
       if (pc < 0 || pc >= size) end(9);
       const op = prog[pc];
